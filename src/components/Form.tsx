@@ -1,31 +1,23 @@
 // Form.tsx
 import React from 'react';
 
-function Form() {
+interface FormProps {
+  onCancel: () => void;
+}
+
+function Form({ onCancel }: FormProps) {
   return (
     <div>
-      <div>
-        <label htmlFor="serviceName">Nome do serviço:</label>
-        <input type="text" id="serviceName" />
-      </div>
-
-      <div>
-        <label htmlFor="login">Login:</label>
-        <input type="text" id="login" />
-      </div>
-
-      <div>
-        <label htmlFor="password">Senha:</label>
-        <input type="password" id="password" />
-      </div>
-
-      <div>
-        <label htmlFor="url">URL:</label>
-        <input type="text" id="url" />
-      </div>
-
+      <label htmlFor="nomeServico">Nome do serviço:</label>
+      <input type="text" id="nomeServico" />
+      <label htmlFor="login">Login:</label>
+      <input type="text" id="login" />
+      <label htmlFor="password">Senha:</label>
+      <input type="password" id="password" />
+      <label htmlFor="url">URL:</label>
+      <input type="text" id="url" />
       <button>Cadastrar</button>
-      <button>Cancelar</button>
+      <button onClick={ onCancel }>Cancelar</button>
     </div>
   );
 }
