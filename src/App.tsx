@@ -14,10 +14,9 @@ function App() {
   };
   return (
     <div>
-      Hello World
       <h1>Gerenciador de senhas</h1>
       {mostrarFormulario ? (
-        <Form onCancel={ ocultarFormulario } />
+        <Form onCancelar={ ocultarFormulario } />
       ) : (
         <button onClick={ exibirFormulario }>Cadastrar nova senha</button>
       )}
