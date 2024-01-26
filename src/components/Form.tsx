@@ -13,21 +13,11 @@ function Form({ onCancelar }: FormProps) {
     url: '',
   });
 
-  const [formErrors, setFormErrors] = useState({
-    nome: false,
-    login: false,
-    senha: false,
-  });
-
-  const [passwordChecks, setPasswordChecks] = useState({
-    hasMinLength: false,
-    hasMaxLength: false,
-    hasLettersAndNumbers: false,
-    hasSpecialChar: false,
-  });
-
   const MIN_PASSWORD_LENGTH = 8;
   const MAX_PASSWORD_LENGTH = 16;
+  const REGEX_WORDS = /[a-zA-Z]/;
+  const REGEX_NUMBERS = /\d/;
+  const REGEX_SPECIAL_CHAR = /[!@#$%^&*(),.?":{}|<>]/;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -35,58 +25,76 @@ function Form({ onCancelar }: FormProps) {
       ...formData,
       [name]: value,
     });
-    validateField(name, value);
   };
 
-  const validateField = (fieldName: string, value: string) => {
-    let error = false;
-    let hasMinLength = false;
-    let hasMaxLength = false;
-    let hasLettersAndNumbers = false;
-    let hasSpecialChar = false;
+  const validateField = (dados: any) => {
+    const { nome, login, senha } = dados;
+    const isValidName = nome !== ''; // Se o nome estiver vazio, retorne True
+    const isValidLogin = login !== '';
+    const isLess8Password = MIN_PASSWORD_LENGTH <= senha.length;
+    const isMore16Password = MAX_PASSWORD_LENGTH >= senha.length;
+    const isPasswordIsValid = REGEX_WORDS.test(senha) && REGEX_NUMBERS.test(senha)
+    && REGEX_SPECIAL_CHAR.test(senha);
 
-    switch (fieldName) {
-      case 'nome':
-      case 'login':
-        error = value.trim() === '';
-        break;
-      case 'senha':
-        hasMinLength = value.length >= MIN_PASSWORD_LENGTH;
-        hasMaxLength = value.length <= MAX_PASSWORD_LENGTH;
-        hasLettersAndNumbers = /[a-zA-Z]/.test(value) && /\d/.test(value);
-        hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+    const isDisable = !(isValidName && isValidLogin && isLess8Password
+      && isPasswordIsValid && isMore16Password);
 
-        error = value.trim() === '' || !hasMinLength
-        || !hasMaxLength || !hasLettersAndNumbers || !hasSpecialChar;
-        break;
-      default:
-        break;
-    }
-
-    setFormErrors({
-      ...formErrors,
-      [fieldName]: error,
-    });
-
-    setPasswordChecks({
-      hasMinLength,
-      hasMaxLength,
-      hasLettersAndNumbers,
-      hasSpecialChar,
-    });
+    return isDisable;
   };
 
-  const renderPasswordCheck = (condition: boolean, message: string) => (
-    <p
-      className={ condition ? 'valid-password-check'
-        : 'invalid-password-check' }
-    >
-      {message}
-    </p>
-  );
+  const validateSingleField = (data: any) => {
+    const isLessTeste = MIN_PASSWORD_LENGTH <= data.senha.length;
+    return !isLessTeste;
+  };
+
+  const validateMaxSixteenField = (data: any) => {
+    const isMaxTeste = MAX_PASSWORD_LENGTH >= data.senha.length;
+    return !isMaxTeste;
+  };
+
+  const validateWordField = ({ senha }: any) => {
+    const isWordTeste = REGEX_WORDS.test(senha);
+    const isNumberTeste = REGEX_NUMBERS.test(senha);
+    return !(isWordTeste && isNumberTeste);
+  };
+
+  const validateSpecialField = ({ senha }: any) => {
+    const isSpecialTeste = REGEX_SPECIAL_CHAR.test(senha);
+    return !isSpecialTeste;
+  };
+
+  const validPassword = 'valid-password-check';
+  const invalidPassword = 'invalid-password-check';
 
   return (
     <div className="label">
+      <ul>
+        <li
+          className={ !validateSingleField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir 8 ou mais caracteres
+        </li>
+        <li
+          className={ !validateMaxSixteenField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir até 16 caracteres
+        </li>
+        <li
+          className={ !validateWordField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir letras e números
+        </li>
+        <li
+          className={ !validateSpecialField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir algum caractere especial
+        </li>
+      </ul>
+      ;
       <label htmlFor="nomeServico">Nome do serviço:</label>
       <input
         type="text"
@@ -117,24 +125,6 @@ function Form({ onCancelar }: FormProps) {
         onChange={ handleChange }
       />
 
-      {/* Mensagens de verificação de senha */}
-      {renderPasswordCheck(
-        passwordChecks.hasMinLength,
-        `Possuir ${MIN_PASSWORD_LENGTH} ou mais caracteres`,
-      )}
-      {renderPasswordCheck(
-        passwordChecks.hasMaxLength,
-        `Possuir até ${MAX_PASSWORD_LENGTH} caracteres`,
-      )}
-      {renderPasswordCheck(
-        passwordChecks.hasLettersAndNumbers,
-        'Possuir letras e números',
-      )}
-      {renderPasswordCheck(
-        passwordChecks.hasSpecialChar,
-        'Possuir algum caractere especial',
-      )}
-
       <label htmlFor="url">URL:</label>
       <input
         type="text"
@@ -144,8 +134,7 @@ function Form({ onCancelar }: FormProps) {
         onChange={ handleChange }
       />
       <button
-        disabled={ Object.values(formErrors).some((error) => error)
-        || !Object.values(formData).every((value) => value.trim() !== '') }
+        disabled={ validateField(formData) }
       >
         Cadastrar
       </button>
