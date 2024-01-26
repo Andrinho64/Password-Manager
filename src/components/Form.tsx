@@ -19,6 +19,16 @@ function Form({ onCancelar }: FormProps) {
     senha: false,
   });
 
+  const [passwordChecks, setPasswordChecks] = useState({
+    hasMinLength: false,
+    hasMaxLength: false,
+    hasLettersAndNumbers: false,
+    hasSpecialChar: false,
+  });
+
+  const MIN_PASSWORD_LENGTH = 8;
+  const MAX_PASSWORD_LENGTH = 16;
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData({
@@ -30,8 +40,10 @@ function Form({ onCancelar }: FormProps) {
 
   const validateField = (fieldName: string, value: string) => {
     let error = false;
-    let hasNumber; let hasLetter; let
-      hasSpecialChar;
+    let hasMinLength = false;
+    let hasMaxLength = false;
+    let hasLettersAndNumbers = false;
+    let hasSpecialChar = false;
 
     switch (fieldName) {
       case 'nome':
@@ -39,13 +51,13 @@ function Form({ onCancelar }: FormProps) {
         error = value.trim() === '';
         break;
       case 'senha':
-
-        hasNumber = /\d/.test(value);
-        hasLetter = /[a-zA-Z]/.test(value);
+        hasMinLength = value.length >= MIN_PASSWORD_LENGTH;
+        hasMaxLength = value.length <= MAX_PASSWORD_LENGTH;
+        hasLettersAndNumbers = /[a-zA-Z]/.test(value) && /\d/.test(value);
         hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
 
-        error = value.length < 8 || value.length > 16
-        || !(hasNumber && hasLetter && hasSpecialChar);
+        error = value.trim() === '' || !hasMinLength
+        || !hasMaxLength || !hasLettersAndNumbers || !hasSpecialChar;
         break;
       default:
         break;
@@ -55,12 +67,23 @@ function Form({ onCancelar }: FormProps) {
       ...formErrors,
       [fieldName]: error,
     });
+
+    setPasswordChecks({
+      hasMinLength,
+      hasMaxLength,
+      hasLettersAndNumbers,
+      hasSpecialChar,
+    });
   };
 
-  const isFormValid = () => {
-    return Object.values(formErrors).every((error) => !error)
-      && Object.values(formData).every((value) => value.trim() !== '');
-  };
+  const renderPasswordCheck = (condition: boolean, message: string) => (
+    <p
+      className={ condition ? 'valid-password-check'
+        : 'invalid-password-check' }
+    >
+      {message}
+    </p>
+  );
 
   return (
     <div className="label">
@@ -87,12 +110,31 @@ function Form({ onCancelar }: FormProps) {
         type="password"
         name="senha"
         id="password"
-        min={ 8 }
-        max={ 16 }
+        min={ MIN_PASSWORD_LENGTH }
+        max={ MAX_PASSWORD_LENGTH }
         required
         value={ formData.senha }
         onChange={ handleChange }
       />
+
+      {/* Mensagens de verificação de senha */}
+      {renderPasswordCheck(
+        passwordChecks.hasMinLength,
+        `Possuir ${MIN_PASSWORD_LENGTH} ou mais caracteres`,
+      )}
+      {renderPasswordCheck(
+        passwordChecks.hasMaxLength,
+        `Possuir até ${MAX_PASSWORD_LENGTH} caracteres`,
+      )}
+      {renderPasswordCheck(
+        passwordChecks.hasLettersAndNumbers,
+        'Possuir letras e números',
+      )}
+      {renderPasswordCheck(
+        passwordChecks.hasSpecialChar,
+        'Possuir algum caractere especial',
+      )}
+
       <label htmlFor="url">URL:</label>
       <input
         type="text"
@@ -101,7 +143,12 @@ function Form({ onCancelar }: FormProps) {
         value={ formData.url }
         onChange={ handleChange }
       />
-      <button disabled={ !isFormValid() }>Cadastrar</button>
+      <button
+        disabled={ Object.values(formErrors).some((error) => error)
+        || !Object.values(formData).every((value) => value.trim() !== '') }
+      >
+        Cadastrar
+      </button>
       <button onClick={ onCancelar }>Cancelar</button>
     </div>
   );
