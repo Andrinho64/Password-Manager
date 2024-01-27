@@ -6,6 +6,7 @@ function App() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [serviceList, setServiceList] = useState([]);
   const [esconderSenhas, setEsconderSenhas] = useState(false);
+  const [mesclarSenha, setMesclarSenha] = useState(false);
   const [, updateState] = useState({});
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
@@ -23,7 +24,11 @@ function App() {
   };
 
   const handleEsconderSenhas = (e: any) => {
-    setEsconderSenhas(e.target.checked);
+    if (e.target.id === 'mesclarPassword') {
+      setMesclarSenha(!mesclarSenha);
+    } else {
+      setEsconderSenhas(e.target.checked);
+    }
   };
 
   return (
@@ -34,6 +39,7 @@ function App() {
           onCancelar={ ocultarFormulario }
           setList={ setServiceList }
           list={ serviceList }
+          propsMesclar={ mesclarSenha }
         />
       ) : (
         <button onClick={ exibirFormulario }>Cadastrar nova senha</button>
@@ -41,6 +47,15 @@ function App() {
       {!serviceList[0] && <p>nenhuma senha cadastrada</p>}
       <input type="checkbox" id="hidePassword" onClick={ handleEsconderSenhas } />
       <label htmlFor="hidePassword">Esconder senhas</label>
+      <label htmlFor="mesclarPassword">
+        <button
+          data-testid="show-hide-form-password"
+          id="mesclarPassword"
+          onClick={ handleEsconderSenhas }
+        >
+          Mesclar senha
+        </button>
+      </label>
 
       { serviceList.map((listOb: any, i: number) => {
         return (

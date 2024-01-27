@@ -5,6 +5,7 @@ interface FormProps {
   onCancelar: () => void;
   setList: (list: any) => void;
   list:FormData[];
+  propsMesclar: boolean;
 }
 
 interface FormData {
@@ -14,7 +15,7 @@ interface FormData {
   url: string,
 }
 
-function Form({ onCancelar, setList, list }: FormProps) {
+function Form({ onCancelar, setList, list, propsMesclar }: FormProps) {
   const [formData, setFormData] = useState<FormData>({
     nome: '',
     login: '',
@@ -129,7 +130,7 @@ function Form({ onCancelar, setList, list }: FormProps) {
       />
       <label htmlFor="password">Senha:</label>
       <input
-        type="password"
+        type={ propsMesclar ? 'text' : 'password' }
         name="senha"
         id="password"
         min={ MIN_PASSWORD_LENGTH }
