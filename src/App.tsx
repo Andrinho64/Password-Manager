@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
+import Swal from 'sweetalert2';
 import Form from './components/Form';
 
 function App() {
@@ -16,6 +17,8 @@ function App() {
 
   const ocultarFormulario = () => {
     setMostrarFormulario(false);
+    Swal.fire({ text: 'Serviço cadastrado com sucesso' });
+    setTimeout(Swal.close, 1500);
   };
 
   const removeService = (position: number) => {
