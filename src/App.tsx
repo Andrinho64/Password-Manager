@@ -5,6 +5,7 @@ import Form from './components/Form';
 function App() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [serviceList, setServiceList] = useState([]);
+  const [esconderSenhas, setEsconderSenhas] = useState(false);
   const [, updateState] = useState({});
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
@@ -21,6 +22,10 @@ function App() {
     forceUpdate();
   };
 
+  const handleEsconderSenhas = (e: any) => {
+    setEsconderSenhas(e.target.checked);
+  };
+
   return (
     <div>
       <h1>Gerenciador de senhas</h1>
@@ -34,16 +39,18 @@ function App() {
         <button onClick={ exibirFormulario }>Cadastrar nova senha</button>
       )}
       {!serviceList[0] && <p>nenhuma senha cadastrada</p>}
+      <input type="checkbox" id="hidePassword" onClick={ handleEsconderSenhas } />
+      <label htmlFor="hidePassword">Esconder senhas</label>
 
       { serviceList.map((listOb: any, i: number) => {
         return (
           <div key={ i }>
             <a href={ listOb.url }>{ listOb.nome }</a>
             <p key={ 2 + i }>{ listOb.login }</p>
-            <p key={ 3 + i }>{ listOb.senha }</p>
+            <p key={ 3 + i }>{ esconderSenhas ? '******' : listOb.senha }</p>
             <button
               data-testid="remove-btn"
-              onClick={ (e) => removeService(i) }
+              onClick={ () => removeService(i) }
             >
               Remover
             </button>
