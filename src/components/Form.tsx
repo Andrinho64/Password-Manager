@@ -1,16 +1,17 @@
+// Form.tsx
 import React, { useState } from 'react';
-
-export interface FormData {
-  nome: string;
-  login: string;
-  senha: string;
-  url: string;
-}
 
 interface FormProps {
   onCancelar: () => void;
-  setList: React.Dispatch<React.SetStateAction<FormData[]>>;
-  list: FormData[];
+  setList: (list: any) => void;
+  list:FormData[];
+}
+
+interface FormData {
+  nome: string,
+  login: string,
+  senha: string,
+  url: string,
 }
 
 function Form({ onCancelar, setList, list }: FormProps) {
@@ -21,6 +22,12 @@ function Form({ onCancelar, setList, list }: FormProps) {
     url: '',
   });
 
+  const MIN_PASSWORD_LENGTH = 8;
+  const MAX_PASSWORD_LENGTH = 16;
+  const REGEX_WORDS = /[a-zA-Z]/;
+  const REGEX_NUMBERS = /\d/;
+  const REGEX_SPECIAL_CHAR = /[!@#$%^&*(),.?":{}|<>]/;
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData({
@@ -29,18 +36,79 @@ function Form({ onCancelar, setList, list }: FormProps) {
     });
   };
 
+  const validateField = (dados: any) => {
+    const { nome, login, senha } = dados;
+    const isValidName = nome !== ''; // Se o nome estiver vazio, retorne True
+    const isValidLogin = login !== '';
+    const isLess8Password = !validateSingleField(dados);
+    const isMore16Password = MAX_PASSWORD_LENGTH >= senha.length;
+    const isPasswordIsValid = REGEX_WORDS.test(senha) && REGEX_NUMBERS.test(senha)
+    && REGEX_SPECIAL_CHAR.test(senha);
+
+    const isDisable = !(isValidName && isValidLogin && isLess8Password
+      && isPasswordIsValid && isMore16Password);
+
+    return isDisable;
+  };
+
+  const validateSingleField = (data: any) => {
+    const isLessTeste = MIN_PASSWORD_LENGTH <= data.senha.length;
+    return !isLessTeste;
+  };
+
+  const validateMaxSixteenField = (data: any) => {
+    const isMaxTeste = MAX_PASSWORD_LENGTH >= data.senha.length;
+    return !isMaxTeste;
+  };
+
+  const validateWordField = ({ senha }: any) => {
+    const isWordTeste = REGEX_WORDS.test(senha);
+    const isNumberTeste = REGEX_NUMBERS.test(senha);
+    return !(isWordTeste && isNumberTeste);
+  };
+
+  const validateSpecialField = ({ senha }: any) => {
+    const isSpecialTeste = REGEX_SPECIAL_CHAR.test(senha);
+    return !isSpecialTeste;
+  };
+
+  const validPassword = 'valid-password-check';
+  const invalidPassword = 'invalid-password-check';
+
   const register = () => {
     setList([...list, formData]);
-    setFormData({
-      nome: '',
-      login: '',
-      senha: '',
-      url: '',
-    });
+    onCancelar();
   };
 
   return (
     <div className="label">
+      <ul>
+        <li
+          className={ !validateSingleField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir 8 ou mais caracteres
+        </li>
+        <li
+          className={ !validateMaxSixteenField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir até 16 caracteres
+        </li>
+        <li
+          className={ !validateWordField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir letras e números
+        </li>
+        <li
+          className={ !validateSpecialField(formData) ? validPassword
+            : invalidPassword }
+        >
+          Possuir algum caractere especial
+        </li>
+      </ul>
+      ;
       <label htmlFor="nomeServico">Nome do serviço:</label>
       <input
         type="text"
@@ -64,6 +132,8 @@ function Form({ onCancelar, setList, list }: FormProps) {
         type="password"
         name="senha"
         id="password"
+        min={ MIN_PASSWORD_LENGTH }
+        max={ MAX_PASSWORD_LENGTH }
         required
         value={ formData.senha }
         onChange={ handleChange }
@@ -77,18 +147,13 @@ function Form({ onCancelar, setList, list }: FormProps) {
         value={ formData.url }
         onChange={ handleChange }
       />
-      <button onClick={ register }>Cadastrar</button>
+      <button
+        onClick={ register }
+        disabled={ validateField(formData) }
+      >
+        Cadastrar
+      </button>
       <button onClick={ onCancelar }>Cancelar</button>
-
-      {list.map((listOb: FormData, i: number) => {
-        return (
-          <div key={ i }>
-            <a href={ listOb.url }>{listOb.nome}</a>
-            <p>{listOb.login}</p>
-            <p>{listOb.senha}</p>
-          </div>
-        );
-      })}
     </div>
   );
 }
